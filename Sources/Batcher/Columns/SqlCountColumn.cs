@@ -20,11 +20,6 @@ namespace Batcher.Columns
 
 
 		#region ISqlColumn
-		public override string ToString()
-		{
-			return GetQuery().Debug();
-		}
-
 		public SqlColumnAlias As(string asName)
 		{
 			return new SqlColumnAlias(this, asName);

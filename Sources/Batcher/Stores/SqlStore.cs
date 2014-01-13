@@ -30,19 +30,14 @@ namespace Batcher.Stores
 		{
 			return new SqlStoreAlias<T>(this.StoreName, asAliasName);
 		}
-
-		public override string ToString()
-		{
-			return this.StoreName;
-		}
 		#endregion
 
 
 		#region ISqlQuery
 		public override SqlQuery GetQuery()
 		{
-			return new SqlQuery(this.ToString());
-		}
+			return new SqlQuery(this.StoreName);
+		} 
 		#endregion
 	}
 }

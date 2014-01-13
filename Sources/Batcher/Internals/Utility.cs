@@ -222,9 +222,10 @@ namespace Batcher.Internals
 
 
 		#region Sql command
-		public static SqlCommand GetTextCommand(SqlConnection connection, IExecutableSqlQuery query)
+		public static SqlCommand GetTextCommand(SqlConnection connection, IExecutableSqlQuery query, Compatibility compatibilityMode)
 		{
-			SqlQuery sqlQuery = query.GetQuery();
+			ICompatibileExecutableSqlQuery compatibileQuery = query as ICompatibileExecutableSqlQuery;
+			SqlQuery sqlQuery = compatibileQuery != null ? compatibileQuery.GetQuery(compatibilityMode) : query.GetQuery();
 
 			SqlCommand command = connection.CreateCommand();
 			command.CommandTimeout = 0;

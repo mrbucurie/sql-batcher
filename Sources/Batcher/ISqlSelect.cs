@@ -2,7 +2,7 @@
 
 namespace Batcher
 {
-	public interface ISqlSelect : IExecutableSqlQuery
+	public interface ISqlSelect : ICompatibileExecutableSqlQuery
 	{
 		ISqlSelect Distinct();
 		ISqlSelect WithNoLock();

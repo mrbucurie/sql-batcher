@@ -26,10 +26,10 @@ namespace Batcher.Stores
 
 
 		#region Public methods
-		public override string ToString()
+		public override SqlQuery GetQuery()
 		{
-			return string.Format(CultureInfo.InvariantCulture, "{0} AS {1}", base.ToString(), this.AsName);
-		}
+			return new SqlQuery(string.Format(CultureInfo.InvariantCulture, "{0} AS {1}", base.ToString(), this.AsName));
+		} 
 		#endregion
 	}
 }

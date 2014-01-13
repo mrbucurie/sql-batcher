@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Batcher.QueryBuilder;
@@ -25,6 +26,11 @@ namespace Batcher.Internals
 		private readonly List<ISqlColumn> _columns;
 
 		private readonly List<ISqlColumn> _groupBy;
+		#endregion
+
+
+		#region Properties
+		public Compatibility CompatibilityMode { get; set; }
 		#endregion
 
 
@@ -153,34 +159,69 @@ namespace Batcher.Internals
 
 		public SqlQuery GetQuery()
 		{
+			return GetQuery(Compatibility.SQL2012);
+		}
+
+		public SqlQuery GetQuery(Compatibility compatibilityMode)
+		{
+			if (this._page.Skip > 0 && this._sorts.Count == 0)
+			{
+				throw new InvalidOperationException("Invalid usage of Skip. There must be at least one sort defined.");
+			}
+
 			SqlQueryAppender appender = SqlQueryAppender.Create();
 
-			AppendSelect(appender);
+			if (compatibilityMode == Compatibility.SQL2008R2)
+			{
+				AppendSelect2008R2(appender);
+			}
+			else
+			{
+				AppendSelect(appender);
+			}
 
 			AppendWhere(appender);
-
-			AppendSort(appender);
-
-			AppendPage(appender);
 
 			AppendGroupBy(appender);
 
 			appender.AppendLine();
 
+			if (compatibilityMode == Compatibility.SQL2008R2)
+			{
+				if (this._page.Skip > 0)
+				{
+					AppendPage2008R2(ref appender);
+				}
+				else
+				{
+					AppendSort(appender);
+				}
+			}
+			else
+			{
+				AppendSort(appender);
+
+				AppendPage(appender);
+			}
+
 			AppendTotalCount(appender);
 
 			return appender.GetQuery();
-		}
-
-		public override string ToString()
-		{
-			return GetQuery().Debug();
 		}
 		#endregion
 
 
 		#region Private methods
-		private void AppendSelect(SqlQueryAppender appender)
+		private void AppendSelect(SqlQueryAppender appender, bool includeTop = true)
+		{
+			AppendSelectColumns(appender, includeTop);
+			appender.AppendLine();
+
+			AppendSelectFrom(appender);
+			appender.AppendLine();
+		}
+
+		private void AppendSelectColumns(SqlQueryAppender appender, bool includeTop)
 		{
 			appender.Append("SELECT ");
 
@@ -189,9 +230,9 @@ namespace Batcher.Internals
 				appender.Append("DISTINCT ");
 			}
 
-			if (this._page.Skip == 0 && this._page.Take.GetValueOrDefault() != 0)
+			if (includeTop)
 			{
-				appender.Append(string.Format(CultureInfo.InvariantCulture, " TOP {0} ", this._page.Take.GetValueOrDefault()));
+				AppendSelectTop(appender);
 			}
 
 			if (this._columns.Count == 0)
@@ -207,14 +248,47 @@ namespace Batcher.Internals
 					appender.Append(this._columns[i].GetQuery());
 				}
 			}
+		}
 
-			appender.AppendLine();
+		private void AppendSelectTop(SqlQueryAppender appender)
+		{
+			if (this._page.Skip == 0 && this._page.Take.GetValueOrDefault() != 0)
+			{
+				appender.Append(string.Format(CultureInfo.InvariantCulture, " TOP {0} ", this._page.Take.GetValueOrDefault()));
+			}
+		}
+
+		private void AppendSelectFrom(SqlQueryAppender appender)
+		{
 			appender.Append("FROM ");
 			appender.Append(this._fromStore.GetQuery());
 			if (this._withHint.HasValue)
 			{
 				appender.Append(string.Format(CultureInfo.InvariantCulture, " {0}", this._withHint.Value.GetSql()));
 			}
+		}
+
+		private void AppendSelect2008R2(SqlQueryAppender appender)
+		{
+			AppendSelectColumns(appender, includeTop: true);
+
+			if (this._page.Skip > 0)
+			{
+				//prepare row_number for paging.
+				appender.AppendLine(",");
+				appender.Append("ROW_NUMBER() OVER(ORDER BY ");
+
+				appender.Append(this._sorts[0].GetQuery());
+				for (int i = 1; i < this._sorts.Count; i++)
+				{
+					appender.Append(",");
+					appender.Append(this._sorts[i].GetQuery());
+				}
+				appender.Append(") AS BacherPgnRowNr");
+				appender.AppendLine();
+			}
+
+			AppendSelectFrom(appender);
 			appender.AppendLine();
 		}
 
@@ -248,7 +322,30 @@ namespace Batcher.Internals
 			if (this._page.Skip != 0)
 			{
 				appender.Append(this._page.GetQuery());
+				appender.AppendLine();
 			}
+		}
+
+		private void AppendPage2008R2(ref SqlQueryAppender appender)
+		{
+			SqlQueryAppender wrapper = SqlQueryAppender.Create();
+			wrapper.AppendLine("SELECT * FROM (");
+			wrapper.Append(appender.GetQuery());
+			wrapper.AppendLine();
+			wrapper.AppendLine(") AS Paging");
+			wrapper.Append("WHERE BacherPgnRowNr ");
+			if (this._page.Take.HasValue)
+			{
+				wrapper.Append(string.Format("BETWEEN {0} AND {1}", this._page.Skip + 1, this._page.Skip + this._page.Take));
+			}
+			else
+			{
+				wrapper.Append(string.Format("> {0}", this._page.Skip));
+			}
+
+			wrapper.AppendLine();
+
+			appender = wrapper;
 		}
 
 		private void AppendGroupBy(SqlQueryAppender appender)
@@ -270,14 +367,16 @@ namespace Batcher.Internals
 		{
 			if (this._includeTotal)
 			{
+				appender.AppendLine();
+
 				appender.AppendLine("SELECT COUNT(*) AS [TotalRowsCount] FROM (");
-				
-				AppendSelect(appender);
-				
+
+				AppendSelect(appender, false);
+
 				AppendWhere(appender);
-				
+
 				AppendGroupBy(appender);
-				
+
 				appender.AppendLine(") AS [Query]");
 			}
 		}

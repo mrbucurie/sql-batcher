@@ -35,15 +35,7 @@ namespace Batcher
 			this.Descending = descending;
 		}
 		#endregion
-
-
-		#region Public methods
-		public override string ToString()
-		{
-			return this.GetQuery().Debug();
-		}
-		#endregion
-
+		
 
 		#region ISqlQuery
 		public SqlQuery GetQuery()

@@ -48,11 +48,13 @@
     <Compile Include="Columns\SqlColumn.cs" />
     <Compile Include="Columns\SqlColumnAlias.cs" />
     <Compile Include="Columns\SqlCountColumn.cs" />
+    <Compile Include="Compatibility.cs" />
     <Compile Include="DbContext.cs" />
     <Compile Include="DbContextExtensions.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="GroupFilter.cs" />
     <Compile Include="GroupFilterType.cs" />
+    <Compile Include="ICompatibileExecutableSqlQuery.cs" />
     <Compile Include="IExecutableSqlQuery.cs" />
     <Compile Include="Internals\LiteralQuery.cs" />
     <Compile Include="Internals\Utility.Delegates.cs" />
@@ -67,7 +69,6 @@
     <Compile Include="Internals\SqlUserDefinedTableTypes.cs" />
     <Compile Include="Internals\TableVariableMetadata.cs" />
     <Compile Include="Internals\Utility.cs" />
-    <Compile Include="IPagedExecutableSqlQuery.cs" />
     <Compile Include="ISqlAlias.cs" />
     <Compile Include="ISqlColumn.cs" />
     <Compile Include="ISqlDelete.cs" />

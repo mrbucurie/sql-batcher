@@ -24,12 +24,7 @@ namespace Batcher.Columns
 		#endregion
 
 
-		#region Public methods
-		public override string ToString()
-		{
-			return GetQuery().Debug();
-		}
-
+		#region ISqlQuery
 		public SqlQuery GetQuery()
 		{
 			SqlQueryAppender appender = SqlQueryAppender.Create();

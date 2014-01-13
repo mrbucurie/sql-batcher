@@ -15,6 +15,8 @@ namespace Batcher
 
 		#region Properties
 		public SqlConnection Connection { get; protected set; }
+
+		protected abstract Compatibility CompatibilityMode { get; }
 		#endregion
 
 
@@ -56,7 +58,7 @@ namespace Batcher
 		/// <returns></returns>
 		public SqlDataSets Execute(IExecutableSqlQuery query)
 		{
-			return new SqlDataSets(Utility.GetTextCommand(this.Connection, query));
+			return new SqlDataSets(Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode));
 		}
 
 		/// <summary>
@@ -66,7 +68,7 @@ namespace Batcher
 		/// <returns></returns>
 		public int ExecuteNonQuery(IExecutableSqlQuery query)
 		{
-			using (var command = Utility.GetTextCommand(this.Connection, query))
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
 			{
 				return command.ExecuteNonQuery();
 			}
@@ -79,7 +81,7 @@ namespace Batcher
 		/// <returns></returns>
 		public object ExecuteScalar(IExecutableSqlQuery query)
 		{
-			using (var command = Utility.GetTextCommand(this.Connection, query))
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
 			{
 				return command.ExecuteScalar();
 			}

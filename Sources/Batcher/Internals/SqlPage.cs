@@ -12,30 +12,20 @@ namespace Batcher.Internals
 		#endregion
 
 
-		#region Public methods
-		public override string ToString()
+		#region ISqlQuery
+		public SqlQuery GetQuery()
 		{
+			StringBuilder result = new StringBuilder();
 			if (this.Skip != 0 || this.Take.HasValue)
 			{
-				StringBuilder result = new StringBuilder();
 				result.AppendFormat(CultureInfo.InvariantCulture, "OFFSET {0} ROWS", this.Skip);
 
 				if (this.Take.HasValue)
 				{
 					result.AppendFormat(CultureInfo.InvariantCulture, " FETCH NEXT {0} ROWS ONLY", this.Take.Value);
 				}
-
-				return result.ToString();
 			}
-			return string.Empty;
-		}
-		#endregion
-
-
-		#region ISqlQuery
-		public SqlQuery GetQuery()
-		{
-			return new SqlQuery(this.ToString());
+			return new SqlQuery(result.ToString());
 		}
 		#endregion
 	}

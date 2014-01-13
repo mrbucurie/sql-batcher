@@ -38,11 +38,6 @@ namespace Batcher.Columns
 
 
 		#region Public methods
-		public override string ToString()
-		{
-			return this._expression;
-		}
-
 		public string GetNameOnly()
 		{
 			var parts = this._expression.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
@@ -59,7 +54,7 @@ namespace Batcher.Columns
 		#region ISqlQueryBuilder
 		public virtual SqlQuery GetQuery()
 		{
-			return new SqlQuery(this.ToString());
+			return new SqlQuery(this._expression);
 		}
 		#endregion
 
