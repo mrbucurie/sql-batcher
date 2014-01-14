@@ -12,6 +12,12 @@ namespace Batcher.Stores
 		public virtual SqlColumn this[Expression<Func<T, object>> selector] { get { return SqlColumn.From(this, selector); } }
 
 		public virtual SqlColumn Wildcard { get { return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.*", this.StoreName)); } }
+
+		public virtual ProcessedStore<T> Inserted { get { return new ProcessedStore<T>("INSERTED"); } }
+		
+		public virtual ProcessedStore<T> Updated { get { return new ProcessedStore<T>("INSERTED"); } }
+		
+		public virtual ProcessedStore<T> Deleted { get { return new ProcessedStore<T>("DELETED"); } }
 		#endregion
 
 
@@ -37,7 +43,7 @@ namespace Batcher.Stores
 		public override SqlQuery GetQuery()
 		{
 			return new SqlQuery(this.StoreName);
-		} 
+		}
 		#endregion
 	}
 }

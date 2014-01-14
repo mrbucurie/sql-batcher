@@ -34,16 +34,15 @@ namespace Batcher.Columns
 		{
 			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", storeAlias.AsName, Utility.GetPropertyName(propertySelector)));
 		}
+
+		internal static SqlColumn From<T>(ProcessedStore<T> store, Expression<Func<T, object>> propertySelector)
+		{
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, Utility.GetPropertyName(propertySelector)));
+		}
 		#endregion
 
 
 		#region Public methods
-		public string GetNameOnly()
-		{
-			var parts = this._expression.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
-			return parts[parts.Length - 1];
-		}
-
 		public SqlColumnAlias As(string asName)
 		{
 			return new SqlColumnAlias(this, asName);

@@ -37,7 +37,7 @@ namespace Batcher.Internals
 			this._outputColumns = columns;
 			if (this._outputColumns == null || this._outputColumns.Length == 0)
 			{
-				this._outputColumns = new[] { new SqlColumn("*") };
+				this._outputColumns = new[] { new SqlColumn("[DELETED].*") };
 			}
 			return this;
 		}
@@ -70,7 +70,16 @@ namespace Batcher.Internals
 			if (columns != null)
 			{
 				appender.Append("OUTPUT ");
-				appender.Append(string.Join(",", columns.Select(c => string.Format(CultureInfo.InvariantCulture, "[DELETED].{0}", c.GetNameOnly()))));
+				var enumerator = columns.GetEnumerator();
+				if (enumerator.MoveNext())
+				{
+					appender.Append(enumerator.Current.GetQuery());
+					while (enumerator.MoveNext())
+					{
+						appender.Append(",");
+						appender.Append(enumerator.Current.GetQuery());
+					}
+				}
 				appender.AppendLine();
 			}
 		}

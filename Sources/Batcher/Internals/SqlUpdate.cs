@@ -37,7 +37,7 @@ namespace Batcher.Internals
 			return this;
 		}
 
-		public ISqlUpdateWhere Set(object values)
+		public ISqlUpdateWhere Set<T>(T values)
 		{
 			this._values = values;
 			return this;
@@ -54,7 +54,7 @@ namespace Batcher.Internals
 			this._outputColumns = columns;
 			if (this._outputColumns == null || this._outputColumns.Length == 0)
 			{
-				this._outputColumns = new[] { new SqlColumn("*") };
+				this._outputColumns = new[] { new SqlColumn("[INSERTED].*") };
 			}
 			return this;
 		}
@@ -63,11 +63,21 @@ namespace Batcher.Internals
 		{
 			if (this._values == null)
 			{
-				throw new InvalidOperationException("Values cannot be null.");
+				throw new InvalidOperationException("Updated values cannot be null.");
 			}
 
 			SqlQueryAppender appender = SqlQueryAppender.Create();
+			
+			GetSingleUpdateQuery(appender);
 
+			return appender.GetQuery();
+		}
+		#endregion
+
+
+		#region Private methods
+		private void GetSingleUpdateQuery(SqlQueryAppender appender)
+		{
 			appender.Append("UPDATE ");
 			appender.Append(this._store.GetQuery());
 			if (this._withHint.HasValue)
@@ -124,18 +134,26 @@ namespace Batcher.Internals
 				}
 
 			}
-			return appender.GetQuery();
 		}
-		#endregion
 
+		private void GetBatchUpdateQuery()
+		{ }
 
-		#region Private methods
 		private static void AppendOutput(IEnumerable<SqlColumn> columns, SqlQueryAppender appender)
 		{
 			if (columns != null)
 			{
 				appender.Append("OUTPUT ");
-				appender.Append(string.Join(",", columns.Select(c => string.Format(CultureInfo.InvariantCulture, "[INSERTED].{0}", c.GetNameOnly()))));
+				var enumerator = columns.GetEnumerator();
+				if (enumerator.MoveNext())
+				{
+					appender.Append(enumerator.Current.GetQuery());
+					while (enumerator.MoveNext())
+					{
+						appender.Append(",");
+						appender.Append(enumerator.Current.GetQuery());
+					}
+				}
 				appender.AppendLine();
 			}
 		}

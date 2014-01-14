@@ -5,8 +5,8 @@ namespace Batcher
 {
 	public interface ISqlInsert
 	{
-		ISqlInsertOutput Values<T>(T rowValues);
-		ISqlInsertOutput ValuesBatch<T>(IEnumerable<T> rowsValues);
+		ISqlInsertOutput Values<T>(T item);
+		ISqlInsertOutput ValuesBatch<T>(IEnumerable<T> items);
 	}
 
 	public interface ISqlInsertOutput : IExecutableSqlQuery

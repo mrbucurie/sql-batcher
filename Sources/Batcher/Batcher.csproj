@@ -56,6 +56,7 @@
     <Compile Include="GroupFilterType.cs" />
     <Compile Include="ICompatibileExecutableSqlQuery.cs" />
     <Compile Include="IExecutableSqlQuery.cs" />
+    <Compile Include="Internals\Utility.InternalExtension.cs" />
     <Compile Include="Internals\LiteralQuery.cs" />
     <Compile Include="Internals\Utility.Delegates.cs" />
     <Compile Include="Internals\SqlColumnMetadata.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="SqlSort.cs" />
     <Compile Include="SqlStore.cs" />
     <Compile Include="SqlUserDefinedTableTypes.cs" />
+    <Compile Include="Stores\ProcessedStore.cs" />
     <Compile Include="Stores\SqlFunctionStore.cs" />
     <Compile Include="Stores\SqlStore.cs" />
     <Compile Include="Stores\SqlStoreAlias.cs" />

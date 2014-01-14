@@ -1,4 +1,5 @@
-﻿using Batcher.Columns;
+﻿using System.Collections.Generic;
+using Batcher.Columns;
 
 namespace Batcher
 {
@@ -9,7 +10,7 @@ namespace Batcher
 
 	public interface ISqlUpdateValues
 	{
-		ISqlUpdateWhere Set(object values);
+		ISqlUpdateWhere Set<T>(T item);
 	}
 
 	public interface ISqlUpdateWhere : ISqlUpdateOutput

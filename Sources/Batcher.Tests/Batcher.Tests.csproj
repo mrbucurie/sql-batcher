@@ -71,17 +71,17 @@
     <Compile Include="Tests\UpdateTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Batcher\Batcher.csproj">
-      <Project>{67da9aae-f133-47de-9846-cf307955ce34}</Project>
-      <Name>Batcher</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Dapper\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Batcher\Batcher.csproj">
+      <Project>{67da9aae-f133-47de-9846-cf307955ce34}</Project>
+      <Name>Batcher</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
