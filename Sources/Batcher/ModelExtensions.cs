@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
@@ -16,6 +15,20 @@ namespace Batcher
 		{
 			TypeDescriptor.AddAttributes(source, new IdentityAttribute(Utility.GetPropertyName(propertySelector), asInsertIdentity));
 
+			return source;
+		}
+
+		public static T Ignore<T>(this T source, Expression<Func<T, object>> propertySelector, params Expression<Func<T, object>>[] propertySelectors)
+			where T : class
+		{
+			TypeDescriptor.AddAttributes(source, new IgnoreAttribute(Utility.GetPropertyName(propertySelector)));
+			if (propertySelectors != null)
+			{
+				foreach (var selector in propertySelectors)
+				{
+					TypeDescriptor.AddAttributes(source, new IgnoreAttribute(Utility.GetPropertyName(selector)));
+				}
+			}
 			return source;
 		}
 

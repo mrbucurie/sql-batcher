@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Batcher.Columns;
 using Batcher.QueryBuilder;
@@ -117,7 +116,7 @@ namespace Batcher.Internals
 		private static void AppendValuesColumns(IEnumerable<SqlColumnMetadata> valueProperties, SqlQueryAppender appender)
 		{
 			appender.Append("([");
-			appender.Append(string.Join("],[", valueProperties.Select(p => p.PropertyInfo.Name)));
+			appender.Append(string.Join("],[", valueProperties.Select(p => p.Name)));
 			appender.Append("])");
 		}
 
@@ -143,7 +142,7 @@ namespace Batcher.Internals
 		private static void AppendRowValues(IEnumerable<SqlColumnMetadata> valueProperties, object value, SqlQueryAppender appender)
 		{
 			appender.Append("(");
-			appender.AppendParams(valueProperties.Select(vp => vp.PropertyInfo.GetValue(value)));
+			appender.AppendParams(valueProperties.Select(vp => vp.GetValue(value)));
 			appender.AppendLine(")");
 		}
 		#endregion

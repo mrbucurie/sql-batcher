@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Batcher.Columns;
 using Batcher.QueryBuilder;
 
@@ -89,14 +88,14 @@ namespace Batcher.Internals
 			IList<SqlColumnMetadata> identityColumns;
 			IList<SqlColumnMetadata> valueProperties = SqlColumnMetadata.GetWriteableColumnsNoIdentity(this._values, out identityColumns);
 
-			appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[0].PropertyInfo.Name));
-			appender.AppendParam(valueProperties[0].PropertyInfo.GetValue(this._values));
+			appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[0].Name));
+			appender.AppendParam(valueProperties[0].GetValue(this._values));
 
 			for (int i = 1; i < valueProperties.Count; i++)
 			{
 				appender.Append(",");
-				appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[i].PropertyInfo.Name));
-				appender.AppendParam(valueProperties[i].PropertyInfo.GetValue(this._values));
+				appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[i].Name));
+				appender.AppendParam(valueProperties[i].GetValue(this._values));
 			}
 			appender.AppendLine();
 
@@ -111,14 +110,14 @@ namespace Batcher.Internals
 				{
 					requiresAnd = true;
 
-					appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", identityColumns[0].PropertyInfo.Name));
-					appender.AppendParam(identityColumns[0].PropertyInfo.GetValue(this._values));
+					appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", identityColumns[0].Name));
+					appender.AppendParam(identityColumns[0].GetValue(this._values));
 
 					for (int i = 1; i < identityColumns.Count; i++)
 					{
 						appender.Append(",");
-						appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", identityColumns[i].PropertyInfo.Name));
-						appender.AppendParam(identityColumns[i].PropertyInfo.GetValue(this._values));
+						appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", identityColumns[i].Name));
+						appender.AppendParam(identityColumns[i].GetValue(this._values));
 					}
 					appender.AppendLine();
 				}
@@ -135,9 +134,6 @@ namespace Batcher.Internals
 
 			}
 		}
-
-		private void GetBatchUpdateQuery()
-		{ }
 
 		private static void AppendOutput(IEnumerable<SqlColumn> columns, SqlQueryAppender appender)
 		{

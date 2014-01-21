@@ -2,34 +2,45 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using Batcher.Annotations;
 
 namespace Batcher.Internals
 {
 	public class SqlColumnMetadata
 	{
+		private PropertyDescriptor _propertyDescriptor;
+
 		public bool IsIdentity { get; set; }
+		
 		public bool IsInsertIdentity { get; set; }
 
-		public PropertyInfo PropertyInfo { get; set; }
+		public string Name { get { return this._propertyDescriptor.Name; } }
+
+		public object GetValue(object source)
+		{
+			return this._propertyDescriptor.GetValue(source);
+		}
 
 		public static IEnumerable<SqlColumnMetadata> GetWriteableColumns(object columnValues)
 		{
-			var identities = TypeDescriptor.GetAttributes(columnValues).OfType<IdentityAttribute>().ToList();
+			var attributes = TypeDescriptor.GetAttributes(columnValues);
 
-			PropertyInfo[] properties = columnValues.GetType().GetProperties(BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.IgnoreCase);
+			var identities = attributes.OfType<IdentityAttribute>().ToList();
 
-			foreach (var property in properties)
+			var ignoreProperties = attributes.OfType<IgnoreAttribute>().Select(a => a.PropertyName).ToList();
+
+			var properties = TypeDescriptor.GetProperties(columnValues);
+
+			foreach (PropertyDescriptor property in properties)
 			{
-				if (property.GetCustomAttribute<IgnoreOnUpdatesAttribute>() != null)
+				if (property.Attributes.OfType<IgnoreOnUpdatesAttribute>().Count() != 0 || ignoreProperties.Contains(property.Name, StringComparer.Ordinal))
 				{
 					continue;
 				}
 
 				SqlColumnMetadata result = new SqlColumnMetadata
 				{
-					PropertyInfo = property
+					_propertyDescriptor = property
 				};
 
 				var identity = identities.Find(id => string.Equals(id.PropertyName, property.Name, StringComparison.OrdinalIgnoreCase));
@@ -40,38 +51,6 @@ namespace Batcher.Internals
 				}
 				yield return result;
 			}
-		}
-
-		public static IEnumerable<SqlColumnMetadata> GetIdendityColumns<T>()
-		{
-			var type = typeof(T);
-			var identities = type.GetCustomAttributes<IdentityAttribute>();
-
-			var result = from identity in identities
-						 let property = type.GetProperty(identity.PropertyName)
-						 select new SqlColumnMetadata
-						 {
-							 PropertyInfo = property,
-							 IsIdentity = true,
-							 IsInsertIdentity = identity.IsInsertIdentity
-						 };
-			return result;
-		}
-
-		public static IEnumerable<SqlColumnMetadata> GetIdendityColumns<T>(T columnValues)
-		{
-			var type = columnValues.GetType();
-			var identities = TypeDescriptor.GetAttributes(columnValues).OfType<IdentityAttribute>();
-
-			var result = from identity in identities
-						 let property = type.GetProperty(identity.PropertyName)
-						 select new SqlColumnMetadata
-									{
-										PropertyInfo = property,
-										IsIdentity = true,
-										IsInsertIdentity = identity.IsInsertIdentity
-									};
-			return result;
 		}
 
 		public static IList<SqlColumnMetadata> GetWriteableColumnsNoIdentity(object columnValues, out IList<SqlColumnMetadata> identities)

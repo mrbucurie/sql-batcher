@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations\IdentityAttribute.cs" />
+    <Compile Include="Annotations\IgnoreAttribute.cs" />
     <Compile Include="Annotations\IgnoreOnUpdatesAttribute.cs" />
     <Compile Include="Annotations\StoreAttribute.cs" />
     <Compile Include="Annotations\UserDefinedTableTypeAttribute.cs" />
