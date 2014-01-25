@@ -285,8 +285,8 @@ namespace Batcher.Internals
 					appender.Append(this._sorts[i].GetQuery());
 				}
 				appender.Append(") AS BacherPgnRowNr");
-				appender.AppendLine();
 			}
+			appender.AppendLine();
 
 			AppendSelectFrom(appender);
 			appender.AppendLine();
