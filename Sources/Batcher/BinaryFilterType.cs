@@ -12,6 +12,7 @@ namespace Batcher
 		Contains,
 		EndsWith,
 		In,
-		NotIn
+		NotIn,
+		Between
 	}
 }

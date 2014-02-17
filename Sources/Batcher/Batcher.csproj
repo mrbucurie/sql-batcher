@@ -57,6 +57,8 @@
     <Compile Include="GroupFilterType.cs" />
     <Compile Include="ICompatibileExecutableSqlQuery.cs" />
     <Compile Include="IExecutableSqlQuery.cs" />
+    <Compile Include="Internals\SqlJoinSelect.cs" />
+    <Compile Include="Internals\SqlJoinType.cs" />
     <Compile Include="Internals\Utility.InternalExtension.cs" />
     <Compile Include="Internals\LiteralQuery.cs" />
     <Compile Include="Internals\Utility.Delegates.cs" />

@@ -17,6 +17,8 @@ namespace Batcher.Internals
 
 		private WithHintType? _withHint;
 
+		private readonly List<SqlJoinSelect> _joins;
+
 		private readonly GroupFilter _whereCriteria;
 
 		private readonly List<SqlSort> _sorts;
@@ -39,6 +41,7 @@ namespace Batcher.Internals
 		{
 			this._fromStore = fromStore;
 			this._columns = new List<ISqlColumn>();
+			this._joins = new List<SqlJoinSelect>();
 			this._whereCriteria = new GroupFilter(GroupFilterType.And);
 			this._sorts = new List<SqlSort>();
 			this._page = new SqlPage();
@@ -145,6 +148,18 @@ namespace Batcher.Internals
 			return this;
 		}
 
+		public ISqlSelect InnerJoin(SqlStore store, ISqlFilter on)
+		{
+			AddJoin(store, SqlJoinType.Inner, on);
+			return this;
+		}
+
+		public ISqlSelect LeftJoin(SqlStore store, ISqlFilter on)
+		{
+			AddJoin(store, SqlJoinType.Left, on);
+			return this;
+		}
+
 		public ISqlSelect Apply(SelectQueryOptions selectOptions)
 		{
 			if (selectOptions != null)
@@ -180,6 +195,8 @@ namespace Batcher.Internals
 				AppendSelect(appender);
 			}
 
+			AppendJoins(appender);
+
 			AppendWhere(appender);
 
 			AppendGroupBy(appender);
@@ -212,6 +229,12 @@ namespace Batcher.Internals
 
 
 		#region Private methods
+		private void AddJoin(ISqlQuery store, SqlJoinType joinType, ISqlFilter onCriteria)
+		{
+			var join = new SqlJoinSelect(joinType, store).With(this._withHint).On(onCriteria);
+			this._joins.Add(join);
+		}
+
 		private void AppendSelect(SqlQueryAppender appender, bool includeTop = true)
 		{
 			AppendSelectColumns(appender, includeTop);
@@ -290,6 +313,18 @@ namespace Batcher.Internals
 
 			AppendSelectFrom(appender);
 			appender.AppendLine();
+		}
+
+		private void AppendJoins(SqlQueryAppender appender)
+		{
+			if (this._joins.Count != 0)
+			{
+				foreach (SqlJoinSelect joinSelect in this._joins)
+				{
+					appender.Append(joinSelect.GetQuery());
+					appender.AppendLine();
+				}
+			}
 		}
 
 		private void AppendWhere(SqlQueryAppender appender)
@@ -372,6 +407,8 @@ namespace Batcher.Internals
 				appender.AppendLine("SELECT COUNT(*) AS [TotalRowsCount] FROM (");
 
 				AppendSelect(appender, false);
+
+				AppendJoins(appender);
 
 				AppendWhere(appender);
 

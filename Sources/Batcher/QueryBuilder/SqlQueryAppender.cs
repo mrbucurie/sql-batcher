@@ -73,6 +73,19 @@ namespace Batcher.QueryBuilder
 			this.AdjustAndAppend(query.SqlFormat, query.SqlParams);
 		}
 
+		public void AppendExpression(object expression)
+		{
+			ISqlQuery sql = expression as ISqlQuery;
+			if (sql != null)
+			{
+				this.Append(sql.GetQuery());
+			}
+			else
+			{
+				this.AppendParam(expression);
+			}
+		}
+
 		public virtual void AppendParam(object value)
 		{
 			if (value == null)

@@ -164,7 +164,11 @@ namespace Batcher.Columns
 		{
 			return new BinaryFilter(this, BinaryFilterType.NotIn, query);
 		}
-		#endregion
 
+		public BinaryFilter Between(object minValue, object maxValue)
+		{
+			return new BinaryFilter(this, BinaryFilterType.Between, new[] { minValue, maxValue });
+		}
+		#endregion
 	}
 }

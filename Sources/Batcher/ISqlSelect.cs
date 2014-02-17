@@ -18,5 +18,7 @@ namespace Batcher
 		ISqlSelect Take(int? fetch);
 		ISqlSelect Apply(SelectQueryOptions selectOptions);
 		ISqlSelect IncludeTotal();
+		ISqlSelect InnerJoin(SqlStore store, ISqlFilter on);
+		ISqlSelect LeftJoin(SqlStore store, ISqlFilter on);
 	}
 }

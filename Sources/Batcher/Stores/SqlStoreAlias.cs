@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using Batcher.Columns;
+using Batcher.QueryBuilder;
 
 namespace Batcher.Stores
 {
@@ -28,7 +29,10 @@ namespace Batcher.Stores
 		#region Public methods
 		public override SqlQuery GetQuery()
 		{
-			return new SqlQuery(string.Format(CultureInfo.InvariantCulture, "{0} AS {1}", base.ToString(), this.AsName));
+			var appender = SqlQueryAppender.Create();
+			appender.Append(base.GetQuery());
+			appender.Append(string.Format(CultureInfo.InvariantCulture, " AS {0}", this.AsName));
+			return appender.GetQuery();
 		} 
 		#endregion
 	}

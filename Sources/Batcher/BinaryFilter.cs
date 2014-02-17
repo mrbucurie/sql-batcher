@@ -94,12 +94,15 @@ namespace Batcher
 				case BinaryFilterType.NotIn:
 					AppendNotIn(appender);
 					break;
+				case BinaryFilterType.Between:
+					AppendBetween(appender);
+					break;
 			}
 		}
 
 		private void AppendEquals(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 
 			if (this.RightExpression == null)
 			{
@@ -108,13 +111,13 @@ namespace Batcher
 			else
 			{
 				appender.Append(" = ");
-				AppendExpression(appender, this.RightExpression);
+				appender.AppendExpression(this.RightExpression);
 			}
 		}
 
 		private void AppendNotEquals(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 
 			if (this.RightExpression == null)
 			{
@@ -123,64 +126,64 @@ namespace Batcher
 			else
 			{
 				appender.Append(" <> ");
-				AppendExpression(appender, this.RightExpression);
+				appender.AppendExpression(this.RightExpression);
 			}
 		}
 
 		private void AppendLower(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" < ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 		}
 
 		private void AppendLowerEquals(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" <= ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 		}
 
 		private void AppendGreater(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" > ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 		}
 
 		private void AppendGreaterEquals(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" >= ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 		}
 
 		private void AppendBeginsWith(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" LIKE ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 			appender.Append(" + '%'");
 		}
 
 		private void AppendContains(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" LIKE '%' + ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 			appender.Append(" + '%'");
 		}
 
 		private void AppendEndsWith(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" LIKE '%' + ");
-			AppendExpression(appender, this.RightExpression);
+			appender.AppendExpression(this.RightExpression);
 		}
 
 		private void AppendIn(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" IN (");
 			AppendExpressionMulti(appender, this.RightExpression);
 			appender.Append(")");
@@ -188,23 +191,37 @@ namespace Batcher
 
 		private void AppendNotIn(SqlQueryAppender appender)
 		{
-			AppendExpression(appender, this.LeftExpression);
+			appender.AppendExpression(this.LeftExpression);
 			appender.Append(" NOT IN (");
 			AppendExpressionMulti(appender, this.RightExpression);
 			appender.Append(")");
 		}
 
-		private static void AppendExpression(SqlQueryAppender appender, object expression)
+		private void AppendBetween(SqlQueryAppender appender)
 		{
-			ISqlQuery sql = expression as ISqlQuery;
-			if (sql != null)
+			appender.AppendExpression(this.LeftExpression);
+			appender.Append(" BETWEEN ");
+
+			IEnumerable enumeration = this.RightExpression as IEnumerable;
+			if (enumeration == null)
 			{
-				appender.Append(sql.GetQuery());
+				throw new InvalidOperationException("Expression must be an instance of IEnumerable and must contain 2 items.");
 			}
-			else
+			var enumerator = enumeration.GetEnumerator();
+
+			if (!enumerator.MoveNext())
 			{
-				appender.AppendParam(expression);
+				throw new InvalidOperationException("Expression must be an instance of IEnumerable and must contain 2 items.");
 			}
+			appender.AppendExpression(enumerator.Current);
+
+			appender.Append(" AND ");
+
+			if (!enumerator.MoveNext())
+			{
+				throw new InvalidOperationException("Expression must be an instance of IEnumerable and must contain 2 items.");
+			}
+			appender.AppendExpression(enumerator.Current);
 		}
 
 		private static void AppendExpressionMulti(SqlQueryAppender appender, object expression)
@@ -219,7 +236,7 @@ namespace Batcher
 				IEnumerable enumeration = expression as IEnumerable;
 				if (enumeration == null)
 				{
-					throw new InvalidOperationException("Expression must be an instance of ISqlQueryBuilder or IEnumerable.");
+					throw new InvalidOperationException("Expression must be an instance of ISqlQuery or IEnumerable.");
 				}
 				appender.AppendParams(enumeration);
 			}
