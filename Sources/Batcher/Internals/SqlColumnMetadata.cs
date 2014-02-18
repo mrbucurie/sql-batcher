@@ -6,12 +6,12 @@ using Batcher.Annotations;
 
 namespace Batcher.Internals
 {
-	public class SqlColumnMetadata
+	internal class SqlColumnMetadata
 	{
 		private PropertyDescriptor _propertyDescriptor;
 
 		public bool IsIdentity { get; set; }
-		
+
 		public bool IsInsertIdentity { get; set; }
 
 		public string Name { get { return this._propertyDescriptor.Name; } }
@@ -72,6 +72,17 @@ namespace Batcher.Internals
 				}
 			}
 			return result;
+		}
+
+		public static IEnumerable<string> GetReadableColumnNames<T>()
+		{
+			Type type = typeof(T);
+
+			var properties = TypeDescriptor.GetProperties(type);
+
+			return from PropertyDescriptor property in properties
+				   where !property.Attributes.OfType<IgnoreOnUpdatesAttribute>().Any()
+				   select property.Name;
 		}
 	}
 }

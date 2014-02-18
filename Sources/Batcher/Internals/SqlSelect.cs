@@ -63,6 +63,12 @@ namespace Batcher.Internals
 			return this;
 		}
 
+		public ISqlSelect Columns(IEnumerable<ISqlColumn> columns)
+		{
+			this._columns.AddRange((columns ?? new ISqlColumn[0]).Where(c => c != null));
+			return this;
+		}
+
 		public ISqlSelect WithNoLock()
 		{
 			this._withHint = WithHintType.NoLock;

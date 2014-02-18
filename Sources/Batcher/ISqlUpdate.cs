@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Batcher.Columns;
-
-namespace Batcher
+﻿namespace Batcher
 {
 	public interface ISqlUpdate : ISqlUpdateValues
 	{
@@ -20,6 +17,6 @@ namespace Batcher
 
 	public interface ISqlUpdateOutput : IExecutableSqlQuery
 	{
-		IExecutableSqlQuery Output(params SqlColumn[] columns);
+		IExecutableSqlQuery Output(params ISqlColumn[] columns);
 	}
 }

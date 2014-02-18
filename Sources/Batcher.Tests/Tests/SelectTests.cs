@@ -19,9 +19,8 @@ namespace Batcher.Tests.Tests
 			var bigData = SqlStore.For<BigData>();
 			var bigData2 = SqlStore.For<BigData>().As("bigData2");
 
-			var query = Sql.Select(bigData).Columns(bigData.Wildcard)
+			var query = Sql.Select(bigData).Columns(bigData2.AllColumns)
 							.InnerJoin(bigData2, on: bigData[t => t.ID] == bigData2[t => t.ID])
-							.Where(bigData[t => t.ID].Between(5, 10))
 							.IncludeTotal();
 
 			using (var dbContext = new BatcherDbContext())

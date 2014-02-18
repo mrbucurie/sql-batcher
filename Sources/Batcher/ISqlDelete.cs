@@ -1,10 +1,8 @@
-﻿using Batcher.Columns;
-
-namespace Batcher
+﻿namespace Batcher
 {
 	public interface ISqlDelete : IExecutableSqlQuery
 	{
 		ISqlDelete Where(ISqlFilter whereCriteria);
-		ISqlDelete Output(params SqlColumn[] columns);
+		ISqlDelete Output(params ISqlColumn[] columns);
 	}
 }

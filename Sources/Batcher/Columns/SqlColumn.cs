@@ -39,6 +39,21 @@ namespace Batcher.Columns
 		{
 			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, Utility.GetPropertyName(propertySelector)));
 		}
+
+		internal static SqlColumn From<T>(SqlStore<T> store, string expression)
+		{
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, expression));
+		}
+
+		internal static SqlColumn From<T>(SqlStoreAlias<T> storeAlias, string expression)
+		{
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", storeAlias.AsName, expression));
+		}
+
+		internal static SqlColumn From<T>(ProcessedStore<T> store, string expression)
+		{
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, expression));
+		}
 		#endregion
 
 
@@ -59,22 +74,9 @@ namespace Batcher.Columns
 
 
 		#region Equality comparer
-		protected bool Equals(SqlColumn other)
-		{
-			return string.Equals(this._expression, other._expression, StringComparison.OrdinalIgnoreCase);
-		}
-
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj))
-			{
-				return false;
-			}
-			if (ReferenceEquals(this, obj))
-			{
-				return true;
-			}
-			return obj.GetType() == this.GetType() && Equals((SqlColumn)obj);
+			return ReferenceEquals(this, obj);
 		}
 
 		public override int GetHashCode()

@@ -7,6 +7,7 @@ namespace Batcher
 		ISqlSelect Distinct();
 		ISqlSelect WithNoLock();
 		ISqlSelect Columns(params ISqlColumn[] columns);
+		ISqlSelect Columns(IEnumerable<ISqlColumn> columns);
 		ISqlSelect Where(ISqlFilter whereCriteria);
 		ISqlSelect OrderByAsc(ISqlColumn column);
 		ISqlSelect OrderByDesc(ISqlColumn column);

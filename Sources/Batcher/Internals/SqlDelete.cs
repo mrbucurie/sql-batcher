@@ -11,7 +11,7 @@ namespace Batcher.Internals
 
 		private ISqlFilter _whereCriteria;
 
-		private SqlColumn[] _outputColumns;
+		private ISqlColumn[] _outputColumns;
 		#endregion
 
 
@@ -30,12 +30,12 @@ namespace Batcher.Internals
 			return this;
 		}
 
-		public ISqlDelete Output(params SqlColumn[] columns)
+		public ISqlDelete Output(params ISqlColumn[] columns)
 		{
 			this._outputColumns = columns;
 			if (this._outputColumns == null || this._outputColumns.Length == 0)
 			{
-				this._outputColumns = new[] { new SqlColumn("[DELETED].*") };
+				this._outputColumns = new ISqlColumn[] { new SqlColumn("[DELETED].*") };
 			}
 			return this;
 		}
@@ -63,7 +63,7 @@ namespace Batcher.Internals
 
 
 		#region Private methods
-		private static void AppendOutput(IEnumerable<SqlColumn> columns, SqlQueryAppender appender)
+		private static void AppendOutput(IEnumerable<ISqlColumn> columns, SqlQueryAppender appender)
 		{
 			if (columns != null)
 			{

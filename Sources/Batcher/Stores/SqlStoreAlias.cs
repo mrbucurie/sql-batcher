@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using Batcher.Columns;
+using Batcher.Internals;
 using Batcher.QueryBuilder;
 
 namespace Batcher.Stores
@@ -13,7 +16,9 @@ namespace Batcher.Stores
 
 		public override SqlColumn this[Expression<Func<T, object>> selector] { get { return SqlColumn.From(this, selector); } }
 
-		public override SqlColumn Wildcard { get { return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.*", this.AsName)); } }
+		public override ISqlColumn Wildcard { get { return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.*", this.AsName)); } }
+
+		public override IEnumerable<ISqlColumn> AllColumns { get { return SqlColumnMetadata.GetReadableColumnNames<T>().Select(columnName => SqlColumn.From(this, columnName)); } }
 		#endregion
 
 
