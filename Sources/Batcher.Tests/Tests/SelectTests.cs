@@ -56,6 +56,31 @@ namespace Batcher.Tests.Tests
 			}
 		}
 
+		[TestMethod]
+		public void TestAnonymous()
+		{
+			var bigDataObj = new 
+			{
+				CreatedDate = default(DateTime),
+				IsBatcher = default(bool?),
+				Amount = default(decimal),
+				Title = default(string),
+			};
+
+			var bigData = SqlStore.ForAnonymous(bigDataObj, "dbo.BigData");
+
+			var query = Sql.Select(bigData)
+							.Take(2)
+							.IncludeTotal();
+
+			using (var dbContext = new BatcherDbContext())
+			{
+				var data =  dbContext.GetResultAnonymous(query, bigDataObj);
+
+				Assert.IsTrue(data.Count == 2);
+			}
+		}
+
 		public void CheckPerformace(int count)
 		{
 			long batcherMillis, dapperMillis;

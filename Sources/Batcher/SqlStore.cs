@@ -23,11 +23,6 @@ namespace Batcher
 			return new SqlStore<T>(tableOrViewName);
 		}
 
-		public static SqlStore<T> ForAnonymous<T>(T anonymousObject)
-		{
-			return new SqlStore<T>();
-		}
-
 		public static SqlStore<T> ForAnonymous<T>(T anonymousObject, string tableOrViewName)
 		{
 			return new SqlStore<T>(tableOrViewName);

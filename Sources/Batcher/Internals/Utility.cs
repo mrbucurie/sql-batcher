@@ -52,7 +52,7 @@ namespace Batcher.Internals
 		{
 			Type dataType = typeof(T);
 
-			List<PropertyInfo> properties = GetProperties(dataReader, dataType);
+			var properties = GetProperties(dataReader, dataType);
 
 			while (dataReader.Read())
 			{
@@ -89,35 +89,34 @@ namespace Batcher.Internals
 		{
 			Type dataType = typeof(T);
 
-			List<PropertyInfo> properties = GetProperties(dataReader, dataType);
+			var properties = GetPropertiesAnonymous(dataReader, dataType);
 
 			var ctor = dataType.GetConstructors().First();
 
 			while (dataReader.Read())
 			{
 				object[] ctorParams = new object[properties.Count];
-
-				for (int i = 0; i < properties.Count; i++)
+				var index = 0;
+				foreach (var property in properties)
 				{
-					PropertyInfo property = properties[i];
-
 					object convertedValue;
 
-					if (SqlDataConvertion.ConvertionDelegate(dataReader[property.Name], property.PropertyType, out convertedValue))
+					if (property.Value && SqlDataConvertion.ConvertionDelegate(dataReader[property.Key.Name], property.Key.PropertyType, out convertedValue))
 					{
-						ctorParams[i] = convertedValue;
+						ctorParams[index] = convertedValue;
 					}
 					else
 					{
-						ctorParams[i] = property.GetValue(defaultValue);
+						ctorParams[index] = property.Key.GetValue(defaultValue);
 					}
+					index++;
 				}
-
+				
 				yield return (T)ctor.Invoke(ctorParams);
 			}
 		}
 
-		public static List<PropertyInfo> GetProperties(IDataReader dataReader, Type targetType)
+		private static IList<PropertyInfo> GetProperties(IDataReader dataReader, Type targetType)
 		{
 			List<PropertyInfo> properties = new List<PropertyInfo>();
 
@@ -133,6 +132,23 @@ namespace Batcher.Internals
 				}
 			}
 			return properties;
+		}
+
+		private static IDictionary<PropertyInfo, bool> GetPropertiesAnonymous(IDataReader dataReader, Type targetType)
+		{
+			Dictionary<PropertyInfo, bool> usedProperties = targetType.GetProperties().ToDictionary(p => p, p => false);
+
+			for (int i = 0; i < dataReader.FieldCount; i++)
+			{
+				string columnName = dataReader.GetName(i);
+
+				var property = usedProperties.FirstOrDefault(p => string.Equals(p.Key.Name, columnName, StringComparison.OrdinalIgnoreCase));
+				if (property.Key != null)
+				{
+					usedProperties[property.Key] = true;
+				}
+			}
+			return usedProperties;
 		}
 		#endregion
 
