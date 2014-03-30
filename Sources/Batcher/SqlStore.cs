@@ -41,12 +41,12 @@ namespace Batcher
 			return new SqlFunctionStore<T>(functionName, functionParameters);
 		}
 
-		public static SqlStore<T> ForFctForAnonymous<T>(T anonymousObject, IEnumerable<object> functionParameters = null)
+		public static SqlStore<T> ForFctAnonymous<T>(T anonymousObject, IEnumerable<object> functionParameters = null)
 		{
 			return new SqlFunctionStore<T>(functionParameters);
 		}
 
-		public static SqlStore<T> ForFctForAnonymous<T>(T anonymousObject, string functionName, IEnumerable<object> functionParameters = null)
+		public static SqlStore<T> ForFctAnonymous<T>(T anonymousObject, string functionName, IEnumerable<object> functionParameters = null)
 		{
 			return new SqlFunctionStore<T>(functionName, functionParameters);
 		} 
