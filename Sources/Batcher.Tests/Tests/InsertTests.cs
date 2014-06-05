@@ -35,11 +35,9 @@ namespace Batcher.Tests.Tests
 		[TestMethod]
 		public void CheckPerformace()
 		{
-			long batcherMillis, dapperMillis;
+			long batcherMillis, batcher2Millis, dapperMillis;
 
 			const int count = 100;
-
-			var bigData = SqlStore.For<BigData>();
 
 			using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["BatcherDb"].ConnectionString))
 			{
@@ -61,6 +59,7 @@ namespace Batcher.Tests.Tests
 			{
 				var values = GetBigDataItems(count);
 
+				var bigData = SqlStore.For<BigData>();
 				var query = Sql.Insert(bigData).ValuesBatch(values);
 
 				Stopwatch sw = Stopwatch.StartNew();
@@ -70,9 +69,25 @@ namespace Batcher.Tests.Tests
 				sw.Stop();
 
 				batcherMillis = sw.ElapsedMilliseconds;
-
 			}
-			Console.WriteLine("Perf (ms) for inserting {0} items - Batcher vs Dapper: {1} - {2}", count, batcherMillis, dapperMillis);
+
+			using (var dbContext = new BatcherDbContext())
+			{
+				var values = GetLegacyDataItems(count);
+
+				var legacyData = SqlStore.For<LegacyData>();
+				var query = Sql.Insert(legacyData).ValuesBatch(values);
+
+				Stopwatch sw = Stopwatch.StartNew();
+
+				var result = dbContext.ExecuteNonQuery(query);
+
+				sw.Stop();
+
+				batcher2Millis = sw.ElapsedMilliseconds;
+			}
+
+			Console.WriteLine("Perf (ms) for inserting {0} items - Batcher vs Dapper: {1}/{2} - {3}", count, batcherMillis, batcher2Millis, dapperMillis);
 		}
 
 		public static IEnumerable<BigData> GetBigDataItems(int count)
@@ -80,6 +95,23 @@ namespace Batcher.Tests.Tests
 			for (int i = 0; i < count; i++)
 			{
 				yield return new BigData
+				{
+					Title = "Item" + i,
+					UniqueID = Guid.NewGuid(),
+					CreatedDate = DateTime.Now,
+					UpdatedDate = DateTime.Now,
+					IsBatcher = true,
+					Amount = i,
+					DataContent = new byte[] { 1, 2, 3, 4, 5 }
+				};
+			}
+		}
+
+		public static IEnumerable<LegacyData> GetLegacyDataItems(int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				yield return new LegacyData
 				{
 					Title = "Item" + i,
 					UniqueID = Guid.NewGuid(),

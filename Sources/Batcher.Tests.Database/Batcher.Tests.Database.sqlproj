@@ -58,5 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\BigData.sql" />
+    <Build Include="dbo\Tables\legacy_data.sql" />
   </ItemGroup>
 </Project>

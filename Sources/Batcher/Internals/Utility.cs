@@ -26,7 +26,7 @@ namespace Batcher.Internals
 			return storeName;
 		}
 
-		public static string GetPropertyName<T>(Expression<Func<T, object>> propertySelector)
+		public static MemberInfo GetProperty<T>(Expression<Func<T, object>> propertySelector)
 		{
 			MemberExpression memberExpression = propertySelector.Body as MemberExpression;
 
@@ -41,7 +41,31 @@ namespace Batcher.Internals
 				throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Cannot extract property from expressions of other types then MemberExpression or UnaryExpression."));
 			}
 
-			return memberExpression.Member.Name;
+			return memberExpression.Member;
+		}
+
+		public static string GetPropertyName<T>(Expression<Func<T, object>> propertySelector)
+		{
+			return GetProperty(propertySelector).Name;
+		}
+
+		public static string GetColumnName<T>(Expression<Func<T, object>> propertySelector)
+		{
+			return GetColumnName(GetProperty(propertySelector));
+		}
+
+		public static string GetColumnName(MemberInfo member)
+		{
+			var columnAttr = member.GetCustomAttribute<SqlColumnAttribute>();
+
+			return columnAttr != null ? columnAttr.Name : member.Name;
+		}
+
+		public static string GetColumnName(PropertyDescriptor property)
+		{
+			var columnAttr = property.Attributes.OfType<SqlColumnAttribute>().FirstOrDefault();
+
+			return columnAttr != null ? columnAttr.Name : property.Name;
 		}
 		#endregion
 
@@ -52,18 +76,25 @@ namespace Batcher.Internals
 		{
 			Type dataType = typeof(T);
 
-			var properties = GetProperties(dataReader, dataType);
+			Dictionary<string, PropertyInfo> columnsProperties = dataType.GetProperties().ToDictionary(GetColumnName, p => p, StringComparer.OrdinalIgnoreCase);
 
 			while (dataReader.Read())
 			{
 				T t = instanceInitializer();
 
-				foreach (PropertyInfo property in properties)
+				for (int i = 0; i < dataReader.FieldCount; i++)
 				{
-					object convertedValue;
-					if (SqlDataConvertion.ConvertionDelegate(dataReader[property.Name], property.PropertyType, out convertedValue))
+					string columnName = dataReader.GetName(i);
+					object columnValue = dataReader[i];
+
+					PropertyInfo property;
+					if (columnsProperties.TryGetValue(columnName, out property))
 					{
-						property.SetValue(t, convertedValue);
+						object convertedValue;
+						if (SqlDataConvertion.ConvertionDelegate(columnValue, property.PropertyType, out convertedValue))
+						{
+							property.SetValue(t, convertedValue);
+						}
 					}
 				}
 
@@ -111,27 +142,9 @@ namespace Batcher.Internals
 					}
 					index++;
 				}
-				
+
 				yield return (T)ctor.Invoke(ctorParams);
 			}
-		}
-
-		private static IList<PropertyInfo> GetProperties(IDataReader dataReader, Type targetType)
-		{
-			List<PropertyInfo> properties = new List<PropertyInfo>();
-
-			for (int i = 0; i < dataReader.FieldCount; i++)
-			{
-				string columnName = dataReader.GetName(i);
-
-				PropertyInfo property = targetType.GetProperty(columnName);
-
-				if (property != null)
-				{
-					properties.Add(property);
-				}
-			}
-			return properties;
 		}
 
 		private static IDictionary<PropertyInfo, bool> GetPropertiesAnonymous(IDataReader dataReader, Type targetType)

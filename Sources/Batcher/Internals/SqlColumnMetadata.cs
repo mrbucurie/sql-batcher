@@ -8,14 +8,23 @@ namespace Batcher.Internals
 {
 	internal class SqlColumnMetadata
 	{
+		#region Private members
 		private PropertyDescriptor _propertyDescriptor;
 
+		private string _columnName;
+		#endregion
+
+
+		#region Properties
 		public bool IsIdentity { get; set; }
 
 		public bool IsInsertIdentity { get; set; }
 
-		public string Name { get { return this._propertyDescriptor.Name; } }
+		public string Name { get { return _columnName ?? (_columnName = Utility.GetColumnName(this._propertyDescriptor)); } }
+		#endregion
 
+
+		#region Public methods
 		public object GetValue(object source)
 		{
 			return this._propertyDescriptor.GetValue(source);
@@ -43,7 +52,7 @@ namespace Batcher.Internals
 					_propertyDescriptor = property
 				};
 
-				var identity = identities.Find(id => string.Equals(id.PropertyName, property.Name, StringComparison.OrdinalIgnoreCase));
+				var identity = identities.Find(id => string.Equals(id.PropertyName, result.Name, StringComparison.OrdinalIgnoreCase));
 				if (identity != null)
 				{
 					result.IsIdentity = true;
@@ -82,7 +91,8 @@ namespace Batcher.Internals
 
 			return from PropertyDescriptor property in properties
 				   where !property.Attributes.OfType<IgnoreOnUpdatesAttribute>().Any()
-				   select property.Name;
+				   select Utility.GetColumnName(property);
 		}
+		#endregion
 	}
 }

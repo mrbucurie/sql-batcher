@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using Batcher.Internals;
 
 namespace Batcher
@@ -13,15 +14,32 @@ namespace Batcher
 
 		private readonly SqlCommand _command;
 
-		private readonly IDataReader _dataReader;
+		private IDataReader _dataReader;
 		#endregion
 
 
 		#region .ctor
-		public SqlDataSets(SqlCommand command)
+		private SqlDataSets(SqlCommand command)
 		{
 			this._command = command;
-			this._dataReader = this._command.ExecuteReader();
+		}
+
+		public static SqlDataSets Get(SqlCommand command)
+		{
+			var dataSets = new SqlDataSets(command);
+			
+			dataSets._dataReader = dataSets._command.ExecuteReader();
+			
+			return dataSets;
+		}
+
+		public static async Task<SqlDataSets> GetAsync(SqlCommand command)
+		{
+			var dataSets = new SqlDataSets(command);
+
+			dataSets._dataReader = await dataSets._command.ExecuteReaderAsync();
+			
+			return dataSets;
 		}
 		#endregion
 

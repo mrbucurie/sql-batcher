@@ -42,6 +42,7 @@
     <Compile Include="Annotations\IdentityAttribute.cs" />
     <Compile Include="Annotations\IgnoreAttribute.cs" />
     <Compile Include="Annotations\IgnoreOnUpdatesAttribute.cs" />
+    <Compile Include="Annotations\SqlColumnAttribute.cs" />
     <Compile Include="Annotations\StoreAttribute.cs" />
     <Compile Include="Annotations\UserDefinedTableTypeAttribute.cs" />
     <Compile Include="BinaryFilter.cs" />
@@ -49,6 +50,9 @@
     <Compile Include="Columns\SqlColumn.cs" />
     <Compile Include="Columns\SqlColumnAlias.cs" />
     <Compile Include="Columns\SqlCountColumn.cs" />
+    <Compile Include="Columns\SqlFuncColumn.cs" />
+    <Compile Include="Columns\SqlMaxColumn.cs" />
+    <Compile Include="Columns\SqlMinColumn.cs" />
     <Compile Include="Compatibility.cs" />
     <Compile Include="DbContext.cs" />
     <Compile Include="DbContextExtensions.cs" />

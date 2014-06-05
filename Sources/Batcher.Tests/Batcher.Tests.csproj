@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Data\BatcherDbContext.cs" />
     <Compile Include="Data\Model\BigData.cs" />
+    <Compile Include="Data\Model\LegacyData.cs" />
     <Compile Include="Execution\Safe.cs" />
     <Compile Include="Execution\SafeOutput.cs" />
     <Compile Include="Program.cs" />

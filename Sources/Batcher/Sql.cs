@@ -17,9 +17,13 @@ namespace Batcher
 
 
 		#region Columns
-		public static SqlCountColumn Count() { return new SqlCountColumn(); }
+		public static SqlCountColumn Count() { return new SqlCountColumn(new SqlColumn("*")); }
 
 		public static SqlCountColumn Count(ISqlColumn column) { return new SqlCountColumn(column); }
+
+		public static SqlMaxColumn Max(ISqlColumn column) { return new SqlMaxColumn(column); }
+
+		public static SqlMinColumn Min(ISqlColumn column) { return new SqlMinColumn(column); }
 		#endregion
 	}
 }

@@ -22,22 +22,22 @@ namespace Batcher.Columns
 
 		internal static SqlColumn From<T>(Expression<Func<T, object>> propertySelector)
 		{
-			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "[{0}]", Utility.GetPropertyName(propertySelector)));
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "[{0}]", Utility.GetColumnName(propertySelector)));
 		}
 
 		internal static SqlColumn From<T>(SqlStore<T> store, Expression<Func<T, object>> propertySelector)
 		{
-			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, Utility.GetPropertyName(propertySelector)));
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, Utility.GetColumnName(propertySelector)));
 		}
 
 		internal static SqlColumn From<T>(SqlStoreAlias<T> storeAlias, Expression<Func<T, object>> propertySelector)
 		{
-			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", storeAlias.AsName, Utility.GetPropertyName(propertySelector)));
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", storeAlias.AsName, Utility.GetColumnName(propertySelector)));
 		}
 
 		internal static SqlColumn From<T>(ProcessedStore<T> store, Expression<Func<T, object>> propertySelector)
 		{
-			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, Utility.GetPropertyName(propertySelector)));
+			return new SqlColumn(string.Format(CultureInfo.InvariantCulture, "{0}.[{1}]", store.StoreName, Utility.GetColumnName(propertySelector)));
 		}
 
 		internal static SqlColumn From<T>(SqlStore<T> store, string expression)

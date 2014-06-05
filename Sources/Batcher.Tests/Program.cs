@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Batcher.Tests.Execution;
 using Batcher.Tests.Tests;
 
@@ -19,10 +20,10 @@ namespace Batcher.Tests
 
 		private static void TestPerfOnSelect()
 		{
-			var insertTest = new SelectTests();
+			var selectTests = new SelectTests();
 			for (int i = 0; i < 10; i++)
 			{
-				insertTest.CheckPerformace(Random.Next(500, 5000));
+				selectTests.CheckPerformace(Random.Next(500, 5000));
 			}
 		}
 

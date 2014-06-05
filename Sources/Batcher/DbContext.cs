@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 using Batcher.Internals;
 
 namespace Batcher
@@ -50,7 +51,7 @@ namespace Batcher
 		#endregion
 
 
-		#region Public methods
+		#region Execute
 		/// <summary>
 		/// Executes the query. This is equivalent with SqlCommand.ExecuteReader.
 		/// </summary>
@@ -58,7 +59,17 @@ namespace Batcher
 		/// <returns></returns>
 		public SqlDataSets Execute(IExecutableSqlQuery query)
 		{
-			return new SqlDataSets(Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode));
+			return SqlDataSets.Get(Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode));
+		}
+
+		/// <summary>
+		/// Executes the query. This is equivalent with SqlCommand.ExecuteReaderAsync.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<SqlDataSets> ExecuteAsync(IExecutableSqlQuery query)
+		{
+			return await SqlDataSets.GetAsync(Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode));
 		}
 
 		/// <summary>
@@ -71,6 +82,19 @@ namespace Batcher
 			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
 			{
 				return command.ExecuteNonQuery();
+			}
+		}
+
+		/// <summary>
+		/// Executes the query. This is equivalent with SqlCommand.ExecuteNonQueryAsync.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<int> ExecuteNonQueryAsync(IExecutableSqlQuery query)
+		{
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
+			{
+				return await command.ExecuteNonQueryAsync();
 			}
 		}
 
@@ -88,81 +112,15 @@ namespace Batcher
 		}
 
 		/// <summary>
-		/// Executes the query and returns the first 2 data sets, assuming the first is the page data and the sencond is the total count.
+		/// Executes the query. This is equivalent with SqlCommand.ExecuteScalarAsync.
 		/// </summary>
 		/// <param name="query">The query to be executed.</param>
 		/// <returns></returns>
-		public PagedData<T> GetPage<T>(IExecutableSqlQuery query)
-			where T : class, new()
+		public async Task<object> ExecuteScalarAsync(IExecutableSqlQuery query)
 		{
-			PagedData<T> result = new PagedData<T>();
-
-			using (var dataSets = this.Execute(query))
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
 			{
-				result.PageData = dataSets.GetSet<T>().ToList();
-				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
-			}
-			return result;
-		}
-
-		/// <summary>
-		/// Executes the query and returns the first 2 data sets, assuming the first is the page data and the sencond is the total count.
-		/// </summary>
-		/// <param name="query">The query to be executed.</param>
-		/// <param name="defaultValue">The default anonymous object value.</param>
-		/// <returns></returns>
-		public PagedData<T> GetPageAnonymous<T>(IExecutableSqlQuery query, T defaultValue)
-			where T : class, new()
-		{
-			PagedData<T> result = new PagedData<T>();
-
-			using (var dataSets = this.Execute(query))
-			{
-				result.PageData = dataSets.GetSetAnonymous(defaultValue).ToList();
-				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
-			}
-			return result;
-		}
-
-		/// <summary>
-		/// Executes the query and returns the only first data set.
-		/// </summary>
-		/// <param name="query">The query to be executed.</param>
-		/// <returns></returns>
-		public IList<T> GetResult<T>(IExecutableSqlQuery query)
-			where T : class, new()
-		{
-			using (var dataSets = this.Execute(query))
-			{
-				return dataSets.GetSet<T>().ToList();
-			}
-		}
-
-		/// <summary>
-		/// Executes the query and returns the only first data set, taking only the first column.
-		/// </summary>
-		/// <param name="query">The query to be executed.</param>
-		/// <returns></returns>
-		public IList<T> GetResultBase<T>(IExecutableSqlQuery query)
-		{
-			using (var dataSets = this.Execute(query))
-			{
-				return dataSets.GetSetBase<T>().ToList();
-			}
-		}
-
-		/// <summary>
-		/// Executes the query and returns the only first data set.
-		/// </summary>
-		/// <param name="query">The query to be executed.</param>
-		/// <param name="defaultValue">The default anonymous object value.</param>
-		/// <returns></returns>
-		public IList<T> GetResultAnonymous<T>(IExecutableSqlQuery query, T defaultValue)
-			where T : class
-		{
-			using (var dataSets = this.Execute(query))
-			{
-				return dataSets.GetSetAnonymous(defaultValue).ToList();
+				return await command.ExecuteScalarAsync();
 			}
 		}
 
@@ -182,7 +140,192 @@ namespace Batcher
 		}
 
 		/// <summary>
-		/// Executes the query and returns only the first column of first row of the data set.<para/>
+		/// An asynchronous version of the DbContext.GetFirst(query).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<T> GetFirstAsync<T>(IExecutableSqlQuery query)
+			where T : class, new()
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				return dataSets.GetSet<T>().FirstOrDefault();
+			}
+		}
+		#endregion
+
+
+		#region GetResult
+		/// <summary>
+		/// Executes the query and returns the only first data set.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public IList<T> GetResult<T>(IExecutableSqlQuery query)
+			where T : class, new()
+		{
+			using (var dataSets = this.Execute(query))
+			{
+				return dataSets.GetSet<T>().ToList();
+			}
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.GetResult(query).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<IList<T>> GetResultAsync<T>(IExecutableSqlQuery query)
+			where T : class, new()
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				return dataSets.GetSet<T>().ToList();
+			}
+		}
+
+		/// <summary>
+		/// Executes the query and returns the only first data set.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="mapper">The mapping delegate</param>
+		/// <returns></returns>
+		public IList<TMap> GetResult<T, TMap>(IExecutableSqlQuery query, Func<T, TMap> mapper)
+			where T : class, new()
+			where TMap : class, new()
+		{
+			using (var dataSets = this.Execute(query))
+			{
+				return dataSets.GetSet<T>().Select(mapper).ToList();
+			}
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.GetResult(query,mapper).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="mapper">The mapping delegate</param>
+		/// <returns></returns>
+		public async Task<IList<TMap>> GetResultAsync<T, TMap>(IExecutableSqlQuery query, Func<T, TMap> mapper)
+			where T : class, new()
+			where TMap : class, new()
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				return dataSets.GetSet<T>().Select(mapper).ToList();
+			}
+		}
+		#endregion
+
+
+		#region GetPage
+		/// <summary>
+		/// Executes the query and returns the first 2 data sets, assuming the first is the page data and the sencond is the total count.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public PagedData<T> GetPage<T>(IExecutableSqlQuery query)
+			where T : class, new()
+		{
+			PagedData<T> result = new PagedData<T>();
+
+			using (var dataSets = this.Execute(query))
+			{
+				result.PageData = dataSets.GetSet<T>().ToList();
+				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.GetPage(query).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<PagedData<T>> GetPageAsync<T>(IExecutableSqlQuery query)
+			where T : class, new()
+		{
+			PagedData<T> result = new PagedData<T>();
+
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				result.PageData = dataSets.GetSet<T>().ToList();
+				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Executes the query and returns the first 2 data sets, assuming the first is the page data and the sencond is the total count.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="mapper">The mapping delegate</param>
+		/// <returns></returns>
+		public PagedData<TMap> GetPage<T, TMap>(IExecutableSqlQuery query, Func<T, TMap> mapper)
+			where T : class, new()
+			where TMap : class, new()
+		{
+			PagedData<TMap> result = new PagedData<TMap>();
+
+			using (var dataSets = this.Execute(query))
+			{
+				result.PageData = dataSets.GetSet<T>().Select(mapper).ToList();
+				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.GetPage(query, mapper).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="mapper">The mapping delegate</param>
+		/// <returns></returns>
+		public async Task<PagedData<TMap>> GetPageAsync<T, TMap>(IExecutableSqlQuery query, Func<T, TMap> mapper)
+			where T : class, new()
+			where TMap : class, new()
+		{
+			PagedData<TMap> result = new PagedData<TMap>();
+
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				result.PageData = dataSets.GetSet<T>().Select(mapper).ToList();
+				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
+			}
+			return result;
+		}
+		#endregion
+
+
+		#region Base types
+		/// <summary>
+		/// Executes the query and returns the only first data set, taking only the first column as a base type (e.g: string, int, Guid, DateTime, etc.).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public IList<T> GetResultBase<T>(IExecutableSqlQuery query)
+		{
+			using (var dataSets = this.Execute(query))
+			{
+				return dataSets.GetSetBase<T>().ToList();
+			}
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.GetResultBase(query).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<IList<T>> GetResultBaseAsync<T>(IExecutableSqlQuery query)
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				return dataSets.GetSetBase<T>().ToList();
+			}
+		}
+
+		/// <summary>
+		/// Executes the query and returns only the first column of first row of the data set as a base type (e.g: string, int, Guid, DateTime, etc.)..<para/>
 		/// Returns default when if data is available.
 		/// </summary>
 		/// <param name="query">The query to be executed.</param>
@@ -196,16 +339,115 @@ namespace Batcher
 		}
 
 		/// <summary>
+		/// An asynchronous version of the DbContext.GetFirstBase(query).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<T> GetFirstBaseAsync<T>(IExecutableSqlQuery query)
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				return dataSets.GetSetBase<T>().FirstOrDefault();
+			}
+		}
+		#endregion
+
+
+		#region Anonymous
+		/// <summary>
+		/// Executes the query and returns the first 2 data sets, assuming the first is the page data and the sencond is the total count.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="defaultValue">The default anonymous object value.</param>
+		/// <returns></returns>
+		public PagedData<T> AnonymousGetPage<T>(IExecutableSqlQuery query, T defaultValue)
+			where T : class, new()
+		{
+			PagedData<T> result = new PagedData<T>();
+
+			using (var dataSets = this.Execute(query))
+			{
+				result.PageData = dataSets.GetSetAnonymous(defaultValue).ToList();
+				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.AnonymousGetPage(query, defaultValue).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="defaultValue">The default anonymous object value.</param>
+		/// <returns></returns>
+		public async Task<PagedData<T>> AnonymousGetPageAsync<T>(IExecutableSqlQuery query, T defaultValue)
+			where T : class, new()
+		{
+			PagedData<T> result = new PagedData<T>();
+
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				result.PageData = dataSets.GetSetAnonymous(defaultValue).ToList();
+				result.TotalCount = dataSets.GetSetBase<int>().FirstOrDefault();
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Executes the query and returns the only first data set.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="defaultValue">The default anonymous object value.</param>
+		/// <returns></returns>
+		public IList<T> AnonymousGetResult<T>(IExecutableSqlQuery query, T defaultValue)
+			where T : class
+		{
+			using (var dataSets = this.Execute(query))
+			{
+				return dataSets.GetSetAnonymous(defaultValue).ToList();
+			}
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.AnonymousGetResult(query, defaultValue).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="defaultValue">The default anonymous object value.</param>
+		/// <returns></returns>
+		public async Task<IList<T>> AnonymousGetResultAsync<T>(IExecutableSqlQuery query, T defaultValue)
+			where T : class
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
+			{
+				return dataSets.GetSetAnonymous(defaultValue).ToList();
+			}
+		}
+
+		/// <summary>
 		/// Executes the query and returns only the first data set. <para/>
 		/// Returns null when if data is available.
 		/// </summary>
 		/// <param name="query">The query to be executed.</param>
 		/// <param name="defaultValue">The default anonymous object value.</param>
 		/// <returns></returns>
-		public T GetFirstAnonymous<T>(IExecutableSqlQuery query, T defaultValue)
+		public T AnonymousGetFirst<T>(IExecutableSqlQuery query, T defaultValue)
 			where T : class
 		{
 			using (var dataSets = this.Execute(query))
+			{
+				return dataSets.GetSetAnonymous(defaultValue).FirstOrDefault();
+			}
+		}
+
+		/// <summary>
+		/// An asynchronous version of the DbContext.AnonymousGetFirst(query, defaultValue).
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="defaultValue">The default anonymous object value.</param>
+		/// <returns></returns>
+		public async Task<T> AnonymousGetFirstAsyn<T>(IExecutableSqlQuery query, T defaultValue)
+			where T : class
+		{
+			using (var dataSets = await this.ExecuteAsync(query))
 			{
 				return dataSets.GetSetAnonymous(defaultValue).FirstOrDefault();
 			}

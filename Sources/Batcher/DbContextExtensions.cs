@@ -13,7 +13,7 @@ namespace Batcher
 		public static SqlDataSets SP<T>(this T dbContext, string storedProcedureName, object parameters)
 			where T : DbContext
 		{
-			return new SqlDataSets(Internals.Utility.GetSPCommand(dbContext, storedProcedureName, parameters));
+			return SqlDataSets.Get(Internals.Utility.GetSPCommand(dbContext, storedProcedureName, parameters));
 		}
 
 		public static int SPNonQuery<T>(this T dbContext, string storedProcedureName)

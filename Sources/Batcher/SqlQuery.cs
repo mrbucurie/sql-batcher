@@ -57,10 +57,18 @@ namespace Batcher
 					}
 					else
 					{
-						byte[] bytesValue = value as byte[];
-						if (bytesValue != null)
+						var guidValue = value as Guid?;
+						if (guidValue.HasValue)
 						{
-							value = "0x" + BitConverter.ToString(bytesValue).Replace("-", "");
+							value = "'" + guidValue.Value.ToString("D", CultureInfo.InvariantCulture) + "'";
+						}
+						else
+						{
+							byte[] bytesValue = value as byte[];
+							if (bytesValue != null)
+							{
+								value = "0x" + BitConverter.ToString(bytesValue).Replace("-", "");
+							}
 						}
 					}
 				}

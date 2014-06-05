@@ -1,4 +1,7 @@
+using System;
+using System.Globalization;
 using Batcher.Columns;
+using Batcher.Internals;
 using Batcher.QueryBuilder;
 
 namespace Batcher
@@ -35,7 +38,21 @@ namespace Batcher
 			this.Descending = descending;
 		}
 		#endregion
-		
+
+
+		#region Public methods (static)
+		public static string DetermineColumnName<T>(string propertyName)
+		{
+			var property = typeof(T).GetProperty(propertyName);
+			if (property == null)
+			{
+				throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Cannot find property {0} in {1}.", propertyName, typeof(T).FullName));
+			}
+
+			return Utility.GetColumnName(property);
+		}
+		#endregion
+
 
 		#region ISqlQuery
 		public SqlQuery GetQuery()
