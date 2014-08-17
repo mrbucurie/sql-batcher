@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Batcher.Internals;
 
@@ -73,6 +74,17 @@ namespace Batcher
 		}
 
 		/// <summary>
+		/// Executes the query. This is equivalent with SqlCommand.ExecuteReaderAsync.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="cancellationToken">The cancellation instruction.</param>
+		/// <returns></returns>
+		public async Task<SqlDataSets> ExecuteAsync(IExecutableSqlQuery query, CancellationToken cancellationToken)
+		{
+			return await SqlDataSets.GetAsync(Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode), cancellationToken);
+		}
+
+		/// <summary>
 		/// Executes the query. This is equivalent with SqlCommand.ExecuteNonQuery.
 		/// </summary>
 		/// <param name="query">The query to be executed.</param>
@@ -99,6 +111,20 @@ namespace Batcher
 		}
 
 		/// <summary>
+		/// Executes the query. This is equivalent with SqlCommand.ExecuteNonQueryAsync.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="cancellationToken">The cancellation instruction.</param>
+		/// <returns></returns>
+		public async Task<int> ExecuteNonQueryAsync(IExecutableSqlQuery query, CancellationToken cancellationToken)
+		{
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
+			{
+				return await command.ExecuteNonQueryAsync(cancellationToken);
+			}
+		}
+
+		/// <summary>
 		/// Executes the query. This is equivalent with SqlCommand.ExecuteScalar.
 		/// </summary>
 		/// <param name="query">The query to be executed.</param>
@@ -121,6 +147,20 @@ namespace Batcher
 			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
 			{
 				return await command.ExecuteScalarAsync();
+			}
+		}
+
+		/// <summary>
+		/// Executes the query. This is equivalent with SqlCommand.ExecuteScalarAsync.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <param name="cancellationToken">The cancellation instruction.</param>
+		/// <returns></returns>
+		public async Task<object> ExecuteScalarAsync(IExecutableSqlQuery query, CancellationToken cancellationToken)
+		{
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
+			{
+				return await command.ExecuteScalarAsync(cancellationToken);
 			}
 		}
 

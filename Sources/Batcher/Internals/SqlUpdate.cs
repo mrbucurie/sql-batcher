@@ -6,7 +6,7 @@ using Batcher.QueryBuilder;
 
 namespace Batcher.Internals
 {
-	internal class SqlUpdate : ISqlUpdate, ISqlUpdateWhere
+	internal class SqlUpdate : ISqlUpdate, ISqlUpdateColumnValue
 	{
 		#region Private members
 		private readonly SqlStore _store;
@@ -15,7 +15,7 @@ namespace Batcher.Internals
 
 		private object _values;
 
-		private ISqlFilter _whereCriteria;
+		private readonly GroupFilter _whereCriteria;
 
 		private ISqlColumn[] _outputColumns;
 		#endregion
@@ -25,6 +25,7 @@ namespace Batcher.Internals
 		public SqlUpdate(SqlStore store)
 		{
 			this._store = store;
+			this._whereCriteria = new GroupFilter(GroupFilterType.And);
 		}
 		#endregion
 
@@ -42,9 +43,19 @@ namespace Batcher.Internals
 			return this;
 		}
 
+		public ISqlUpdateColumnValue Set(ISqlColumn column, object value)
+		{
+			if (this._values == null)
+			{
+				this._values = new Dictionary<ISqlColumn, object>();
+			}
+			((Dictionary<ISqlColumn, object>)this._values)[column] = value;
+			return this;
+		}
+
 		public ISqlUpdateOutput Where(ISqlFilter whereCriteria)
 		{
-			this._whereCriteria = whereCriteria;
+			this._whereCriteria.Add(whereCriteria);
 			return this;
 		}
 
@@ -85,23 +96,52 @@ namespace Batcher.Internals
 			}
 			appender.AppendLine(" SET ");
 
-			IList<SqlColumnMetadata> identityColumns;
-			IList<SqlColumnMetadata> valueProperties = SqlColumnMetadata.GetWriteableColumnsNoIdentity(this._values, out identityColumns);
+			IList<SqlColumnMetadata> identityColumns = null;
 
-			appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[0].Name));
-			appender.AppendParam(valueProperties[0].GetValue(this._values));
-
-			for (int i = 1; i < valueProperties.Count; i++)
+			Dictionary<ISqlColumn, object> columnValues = this._values as Dictionary<ISqlColumn, object>;
+			if (columnValues != null)
 			{
-				appender.Append(",");
-				appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[i].Name));
-				appender.AppendParam(valueProperties[i].GetValue(this._values));
+				var columnValuesEnumerator = columnValues.GetEnumerator();
+				if (columnValuesEnumerator.MoveNext())
+				{
+					appender.Append(columnValuesEnumerator.Current.Key.GetQuery());
+					appender.Append("=");
+					appender.AppendParam(columnValuesEnumerator.Current.Value);
+					
+					while (columnValuesEnumerator.MoveNext())
+					{
+						appender.Append(",");
+						appender.Append(columnValuesEnumerator.Current.Key.GetQuery());
+						appender.Append("=");
+						appender.AppendParam(columnValuesEnumerator.Current.Value);
+					}
+					appender.AppendLine();
+				}
 			}
-			appender.AppendLine();
+			else
+			{
+				IList<SqlColumnMetadata> valueProperties = SqlColumnMetadata.GetWriteableColumnsNoIdentity(this._values, out identityColumns);
 
+				appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[0].Name));
+				appender.AppendParam(valueProperties[0].GetValue(this._values));
+
+				for (int i = 1; i < valueProperties.Count; i++)
+				{
+					appender.Append(",");
+					appender.Append(string.Format(CultureInfo.InvariantCulture, "[{0}]=", valueProperties[i].Name));
+					appender.AppendParam(valueProperties[i].GetValue(this._values));
+				}
+				appender.AppendLine();
+			}
+			
 			AppendOutput(this._outputColumns, appender);
 
-			if (this._whereCriteria != null || (identityColumns != null && identityColumns.Count != 0))
+			AppendWhere(appender, identityColumns);
+		}
+
+		private void AppendWhere(SqlQueryAppender appender, IList<SqlColumnMetadata> identityColumns)
+		{
+			if (this._whereCriteria.HasFilters || (identityColumns != null && identityColumns.Count != 0))
 			{
 				appender.Append("WHERE ");
 				bool requiresAnd = false;
@@ -122,7 +162,7 @@ namespace Batcher.Internals
 					appender.AppendLine();
 				}
 
-				if (this._whereCriteria != null)
+				if (this._whereCriteria.HasFilters)
 				{
 					if (requiresAnd)
 					{
@@ -131,7 +171,6 @@ namespace Batcher.Internals
 					appender.Append(this._whereCriteria.GetQuery());
 					appender.AppendLine();
 				}
-
 			}
 		}
 

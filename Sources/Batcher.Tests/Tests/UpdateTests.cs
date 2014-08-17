@@ -55,6 +55,16 @@ namespace Batcher.Tests.Tests
 				item = dbContext.GetResult<BigData>(query).First();
 
 				Assert.AreEqual(item.Title, updateTitle + "2");
+
+				//update the item again
+				query = Sql.Update(bigData)
+							.Set(bigData[t => t.Title], updateTitle + "3")
+							.Set(bigData[t => t.IsBatcher], true)
+							.Where(bigData[d => d.ID] == item.ID).Output();
+				
+				item = dbContext.GetResult<BigData>(query).First();
+
+				Assert.AreEqual(item.Title, updateTitle + "3");
 			}
 		}
 	}

@@ -8,6 +8,12 @@
 	public interface ISqlUpdateValues
 	{
 		ISqlUpdateWhere Set<T>(T item);
+		ISqlUpdateColumnValue Set(ISqlColumn column, object value);
+	}
+
+	public interface ISqlUpdateColumnValue : ISqlUpdateWhere
+	{
+		ISqlUpdateColumnValue Set(ISqlColumn column, object value);
 	}
 
 	public interface ISqlUpdateWhere : ISqlUpdateOutput

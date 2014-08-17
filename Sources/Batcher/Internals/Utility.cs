@@ -175,7 +175,7 @@ namespace Batcher.Internals
 			}
 		}
 
-		public static IEnumerable<SqlParameter> GetSqlParameters<T>(object parameters)
+		public static IEnumerable<SqlParameter> GetSqlParameters<T>(this T dbContext, object parameters)
 			where T : DbContext
 		{
 			if (parameters != null)
@@ -197,7 +197,7 @@ namespace Batcher.Internals
 						{
 							var elementType = attr.ElementType ?? propertyDescriptor.PropertyType.GetInterface(typeof(IEnumerable<>).Name).GetGenericArguments()[0];
 
-							IEnumerable<string> orderdColumns = SqlUserDefinedTableTypes<T>.GetUserDefinedTableOrderedColumns(attr.ObjectName);
+							IEnumerable<string> orderdColumns = SqlUserDefinedTableTypes<T>.GetUserDefinedTableOrderedColumns(dbContext, attr.ObjectName);
 
 							yield return new SqlParameter(parameterName, SqlDbType.Structured)
 							{
@@ -287,7 +287,7 @@ namespace Batcher.Internals
 
 			if (parameters != null)
 			{
-				IEnumerable<SqlParameter> sqlParameters = GetSqlParameters<T>(parameters);
+				IEnumerable<SqlParameter> sqlParameters = dbContext.GetSqlParameters(parameters);
 				command.Parameters.AddParameters(sqlParameters.Select(p => { SqlDataConvertion.AdjustSqlParameterDelegate(p); return p; }));
 			}
 
