@@ -23,10 +23,32 @@ namespace Batcher
 
 
 		#region .ctor
-		protected DbContext(string connectionString)
+		protected DbContext(string connectionString, bool openConnection = true)
 		{
 			this.Connection = new SqlConnection(connectionString);
-			this.Connection.Open();
+			if (openConnection)
+			{
+				OpenConnection();
+			}
+		}
+		#endregion
+
+		
+		#region Protected methods
+		protected void OpenConnection()
+		{
+			if (this.Connection.State == System.Data.ConnectionState.Closed || this.Connection.State == System.Data.ConnectionState.Broken)
+			{
+				this.Connection.Open();
+			}
+		}
+
+		protected async Task OpenConnectionAsync()
+		{
+			if (this.Connection.State == System.Data.ConnectionState.Closed || this.Connection.State == System.Data.ConnectionState.Broken)
+			{
+				await this.Connection.OpenAsync();
+			}
 		}
 		#endregion
 
