@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using Batcher.Tests.Execution;
 using Batcher.Tests.Tests;
 
 namespace Batcher.Tests

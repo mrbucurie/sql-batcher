@@ -69,6 +69,7 @@
     <Compile Include="Tests\InsertTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\SelectTests.cs" />
+    <Compile Include="Tests\SPTests.cs" />
     <Compile Include="Tests\UpdateTests.cs" />
   </ItemGroup>
   <ItemGroup>

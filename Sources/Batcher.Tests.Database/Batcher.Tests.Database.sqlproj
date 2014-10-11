@@ -55,9 +55,13 @@
     <Folder Include="Properties" />
     <Folder Include="dbo\" />
     <Folder Include="dbo\Tables\" />
+    <Folder Include="dbo\UserDefinedTableTypes" />
+    <Folder Include="dbo\StoredProcedures" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\BigData.sql" />
     <Build Include="dbo\Tables\legacy_data.sql" />
+    <Build Include="dbo\UserDefinedTableTypes\udLegacyDataTable.sql" />
+    <Build Include="dbo\StoredProcedures\spSelectLegacyData.sql" />
   </ItemGroup>
 </Project>

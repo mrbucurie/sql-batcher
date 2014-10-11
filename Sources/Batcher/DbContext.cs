@@ -192,6 +192,32 @@ namespace Batcher
 				return dataSets.GetSet<T>().FirstOrDefault();
 			}
 		}
+
+		/// <summary>
+		/// Executes the query and returns a SqlDataReader. This is equivalent with SqlCommand.ExecuteReader.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public SqlDataReader ExecuteReader(IExecutableSqlQuery query)
+		{
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
+			{
+				return command.ExecuteReader();
+			}
+		}
+
+		/// <summary>
+		/// Executes the query and returns a SqlDataReader. This is equivalent with SqlCommand.ExecuteReaderAsync.
+		/// </summary>
+		/// <param name="query">The query to be executed.</param>
+		/// <returns></returns>
+		public async Task<SqlDataReader> ExecuteReaderAsync(IExecutableSqlQuery query)
+		{
+			using (var command = Utility.GetTextCommand(this.Connection, query, this.CompatibilityMode))
+			{
+				return await command.ExecuteReaderAsync();
+			}
+		}
 		#endregion
 
 

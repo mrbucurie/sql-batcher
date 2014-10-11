@@ -26,7 +26,57 @@ namespace Batcher.Tests.Tests
 
 			using (var dbContext = new BatcherDbContext())
 			{
-				values = dbContext.GetResult<BigData>(query).ToList();
+				values = dbContext.GetResult<BigData>(query);
+			}
+
+			Assert.AreEqual(values.Count(), count);
+		}
+
+		[TestMethod]
+		public void TestInsertWithScopeIdentity()
+		{
+			var value = GetBigDataItems(1).First();
+
+			var bigData = SqlStore.For<BigData>();
+
+			var query = new QueryBatch
+			{
+				Sql.Insert(bigData).Values(value).Output(),
+				Sql.SelectScopeIdentity(),
+			};
+			using (var dbContext = new BatcherDbContext())
+			{
+				using (var sbSets = dbContext.Execute(query))
+				{
+					value = sbSets.GetSet<BigData>().First();
+					int insertedID = sbSets.GetSetBase<int>().First();
+
+					Assert.AreEqual(value.ID, insertedID);
+				}
+			}
+		}
+
+		[TestMethod]
+		public void TestInsertsWithScopeIdentities()
+		{
+			const int count = 100;
+			var values = GetBigDataItems(count);
+
+			var bigData = SqlStore.For<BigData>();
+
+			var query = new QueryBatch();
+			foreach (var value in values)
+			{
+				query.Add(Sql.Insert(bigData).Values(value));
+				query.Add(Sql.Select(bigData).Where(bigData[t => t.ID] == Sql.ScopeIdentity()));
+			}
+
+			using (var dbContext = new BatcherDbContext())
+			{
+				using (var dbSets = dbContext.Execute(query))
+				{
+					values = dbSets.GetUnifiedSets<BigData>().ToList();
+				}
 			}
 
 			Assert.AreEqual(values.Count(), count);

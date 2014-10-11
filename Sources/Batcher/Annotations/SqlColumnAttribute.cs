@@ -7,8 +7,6 @@ namespace Batcher.Annotations
 	{
 		public string Name { get; set; }
 
-		public SqlColumnAttribute() { }
-
 		public SqlColumnAttribute(string columnName)
 		{
 			this.Name = columnName;

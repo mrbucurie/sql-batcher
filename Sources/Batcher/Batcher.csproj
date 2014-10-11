@@ -20,6 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,12 +59,15 @@
     <Compile Include="DbContext.cs" />
     <Compile Include="DbContextExtensions.cs" />
     <Compile Include="Delegates.cs" />
+    <Compile Include="Expressions\LiteralExtensions.cs" />
     <Compile Include="GroupFilter.cs" />
     <Compile Include="GroupFilterType.cs" />
     <Compile Include="ICompatibileExecutableSqlQuery.cs" />
     <Compile Include="IExecutableSqlQuery.cs" />
     <Compile Include="Internals\SqlJoinSelect.cs" />
     <Compile Include="Internals\SqlJoinType.cs" />
+    <Compile Include="Internals\SqlScopeIdentity.cs" />
+    <Compile Include="Internals\SqlSelectScopeIdentity.cs" />
     <Compile Include="Internals\Utility.InternalExtension.cs" />
     <Compile Include="Internals\LiteralQuery.cs" />
     <Compile Include="Internals\Utility.Delegates.cs" />

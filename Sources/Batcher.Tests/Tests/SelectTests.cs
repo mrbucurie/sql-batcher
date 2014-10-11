@@ -164,9 +164,7 @@ namespace Batcher.Tests.Tests
 
 			var bigData = SqlStore.ForAnonymous(bigDataObj, "dbo.BigData");
 
-			var query = Sql.Select(bigData)
-							.Take(2)
-							.IncludeTotal();
+			var query = Sql.Select(bigData).Take(2);
 
 			using (var dbContext = new BatcherDbContext())
 			{
@@ -188,7 +186,7 @@ namespace Batcher.Tests.Tests
 
 				var values = connection.Query<BigData>("select TOP (@rows) * from BigData", new { rows = count });
 
-				var last = values.ToList().LastOrDefault();
+				var last = values.LastOrDefault();
 
 				sw.Stop();
 

@@ -9,7 +9,7 @@ namespace Batcher.Internals
 		#region Private members
 		private readonly SqlStore _store;
 
-		private ISqlFilter _whereCriteria;
+		private readonly GroupFilter _whereCriteria;
 
 		private ISqlColumn[] _outputColumns;
 		#endregion
@@ -19,6 +19,7 @@ namespace Batcher.Internals
 		public SqlDelete(SqlStore store)
 		{
 			this._store = store;
+			this._whereCriteria = new GroupFilter(GroupFilterType.And);
 		}
 		#endregion
 
@@ -26,7 +27,7 @@ namespace Batcher.Internals
 		#region ISqlDelete
 		public ISqlDelete Where(ISqlFilter whereCriteria)
 		{
-			this._whereCriteria = whereCriteria;
+			this._whereCriteria.Add(whereCriteria);
 			return this;
 		}
 

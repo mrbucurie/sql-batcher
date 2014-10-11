@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace Batcher.Internals
 {
@@ -24,8 +23,8 @@ namespace Batcher.Internals
 		{
 			string[] nameParts = objectName.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries);
 
-			string schemaName = nameParts.Length > 1 ? Regex.Replace(nameParts[0], "\\[|\\]", string.Empty, RegexOptions.Compiled) : "dbo";
-			string tableName = schemaName + "." + Regex.Replace(nameParts[nameParts.Length - 1], "\\[|\\]", string.Empty, RegexOptions.Compiled);
+			string schemaName = nameParts.Length > 1 ? Utility.StripOfSquareBrackets(nameParts[0]) : "dbo";
+			string tableName = schemaName + "." + Utility.StripOfSquareBrackets(nameParts[nameParts.Length - 1]);
 
 			TableVariableMetadata definedTableType;
 			if (!TableVariables.TryGetValue(tableName, out definedTableType))
@@ -39,7 +38,7 @@ namespace Batcher.Internals
 
 			if (definedTableType == null)
 			{
-				throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Could not resolve the SqlUserDefinedTableType {0}!", objectName));
+				throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Could not resolve the SqlUserDefinedTableType {0}.", objectName));
 			}
 
 			return definedTableType.OrderColumns;

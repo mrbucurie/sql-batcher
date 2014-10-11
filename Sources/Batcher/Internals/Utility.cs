@@ -15,6 +15,12 @@ namespace Batcher.Internals
 	internal static partial class Utility
 	{
 		#region Mapping
+		public static string StripOfSquareBrackets(string value)
+		{
+			return value.TrimStart('[').TrimEnd(']');
+			//return Regex.Replace(value, "\\[|\\]", string.Empty, RegexOptions.Compiled);
+		}
+
 		public static string GetDefaultSoreName<T>()
 		{
 			Type tType = typeof(T);
@@ -66,6 +72,19 @@ namespace Batcher.Internals
 			var columnAttr = property.Attributes.OfType<SqlColumnAttribute>().FirstOrDefault();
 
 			return columnAttr != null ? columnAttr.Name : property.Name;
+		}
+
+		public static IEnumerable<KeyValuePair<string, PropertyInfo>> MapProperties(Type type, IEnumerable<string> columnNames)
+		{
+			Dictionary<string, PropertyInfo> namedProperties = type.GetProperties().ToDictionary(GetColumnName);
+
+			foreach (var columnName in columnNames)
+			{
+				PropertyInfo property;
+				namedProperties.TryGetValue(columnName, out property);
+
+				yield return new KeyValuePair<string, PropertyInfo>(columnName, property);
+			}
 		}
 		#endregion
 
@@ -215,30 +234,31 @@ namespace Batcher.Internals
 			}
 		}
 
-		public static DataTable GetUDTTParameter(IEnumerable elements, Type elementType, IEnumerable<string> orderedProperties)
+		public static DataTable GetUDTTParameter(IEnumerable elements, Type elementType, IEnumerable<string> orderedColumns)
 		{
 			DataTable dataTable = new DataTable("UDTTVar");
 
-			List<PropertyInfo> properties = new List<PropertyInfo>();
+			var properties = MapProperties(elementType, orderedColumns)
+									.Where(mp =>
+									{
+										string columnName = mp.Key;
+										Type columnType = null;
 
-			foreach (string propertyName in orderedProperties)
-			{
-				PropertyInfo property = elementType.GetProperty(propertyName);
+										PropertyInfo property = mp.Value;
+										if (property != null)
+										{
+											columnType = property.PropertyType;
 
-				Type columnType = null;
-				if (property != null)
-				{
-					columnType = property.PropertyType;
+											if (columnType.IsGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
+											{
+												columnType = columnType.GetGenericArguments()[0];
+											}
+										}
+										dataTable.Columns.Add(new DataColumn(columnName, columnType ?? typeof(string)));
 
-					if (columnType.IsGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
-					{
-						columnType = columnType.GetGenericArguments()[0];
-					}
-				}
-
-				dataTable.Columns.Add(new DataColumn(propertyName, columnType ?? typeof(string)));
-				properties.Add(property);
-			}
+										return property != null;
+									})
+									.Select(mp => mp.Value).ToList();
 
 			foreach (object element in elements)
 			{

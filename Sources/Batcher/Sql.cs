@@ -1,3 +1,4 @@
+using System;
 using Batcher.Columns;
 using Batcher.Internals;
 
@@ -13,6 +14,17 @@ namespace Batcher
 		public static ISqlUpdate Update(SqlStore store) { return new SqlUpdate(store); }
 
 		public static ISqlDelete Delete(SqlStore store) { return new SqlDelete(store); }
+
+		public static ISqlQuery ScopeIdentity() { return new SqlScopeIdentity(); }
+
+		public static IExecutableSqlQuery SelectScopeIdentity(string asAliasName = "ScopeIdentity")
+		{
+			if (string.IsNullOrWhiteSpace(asAliasName))
+			{
+				throw new ArgumentException("Parameter asAliasName cannot be null or empty.", "asAliasName");
+			}
+			return new SqlSelectScopeIdentity(asAliasName);
+		}
 		#endregion
 
 
